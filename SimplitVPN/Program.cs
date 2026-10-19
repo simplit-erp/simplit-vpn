@@ -264,19 +264,19 @@ internal sealed class AssistantForm : Form
             $match = @(Get-VpnConnection | Where-Object {
                 $_.Name -eq $profileName -or $_.ServerAddress -eq $server
             } | Select-Object -First 1)
+            $eap = New-EapConfiguration
             if ($match.Count -gt 0) {
                 $profileName = $match[0].Name
                 Set-VpnConnection -Name $profileName -ServerAddress $server -TunnelType Ikev2 `
+                    -AuthenticationMethod Eap -EapConfigXmlStream $eap.EapConfigXmlStream `
                     -SplitTunneling $true -DnsSuffix $dnsSuffix `
                     -RememberCredential $false | Out-Null
             } else {
+                # Add-VpnConnection takes switches here; Set-VpnConnection takes Boolean values.
                 Add-VpnConnection -Name $profileName -ServerAddress $server -TunnelType Ikev2 `
-                    -SplitTunneling $true -DnsSuffix $dnsSuffix `
-                    -RememberCredential $false | Out-Null
+                    -AuthenticationMethod Eap -EapConfigXmlStream $eap.EapConfigXmlStream `
+                    -SplitTunneling -DnsSuffix $dnsSuffix | Out-Null
             }
-            $eap = New-EapConfiguration
-            Set-VpnConnection -Name $profileName -AuthenticationMethod Eap `
-                -EapConfigXmlStream $eap.EapConfigXmlStream -RememberCredential $false | Out-Null
             $route = @(Get-VpnConnectionRoute -ConnectionName $profileName -ErrorAction SilentlyContinue |
                 Where-Object { $_.DestinationPrefix -eq '{{InternalNetwork}}' })
             if ($route.Count -eq 0) {
