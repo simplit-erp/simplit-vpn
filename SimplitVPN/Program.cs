@@ -34,7 +34,8 @@ internal sealed class AssistantForm : Form
 
     public AssistantForm()
     {
-        Text = "SimplitVPN";
+        var version = typeof(Program).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
+        Text = $"SimplitVPN v{version}";
         ClientSize = new Size(620, 500);
         MinimumSize = new Size(620, 500);
         MaximumSize = new Size(620, 500);
@@ -55,13 +56,24 @@ internal sealed class AssistantForm : Form
 
         var brand = new Label
         {
-            Text = "SIMPLIT  /  ACCESO REMOTO",
+            Text = "OILMETAL S.A.",
             ForeColor = Color.FromArgb(184, 210, 238),
             Font = new Font("Segoe UI Semibold", 9F),
             AutoSize = true,
             Location = new Point(30, 18)
         };
         header.Controls.Add(brand);
+
+        var versionLabel = new Label
+        {
+            Text = $"v{version}",
+            ForeColor = Color.FromArgb(184, 210, 238),
+            Font = new Font("Segoe UI", 9F),
+            Location = new Point(500, 18),
+            Size = new Size(90, 18),
+            TextAlign = ContentAlignment.MiddleRight
+        };
+        header.Controls.Add(versionLabel);
 
         var heading = new Label
         {
@@ -84,7 +96,7 @@ internal sealed class AssistantForm : Form
 
         var intro = new Label
         {
-            Text = "Este asistente configura la VPN de Windows para que puedas acceder a los recursos internos de Oilmetal.",
+            Text = "Este asistente configura la VPN de Windows",
             ForeColor = TextColor,
             Font = new Font("Segoe UI", 10.5F),
             Location = new Point(30, 20),
@@ -259,32 +271,40 @@ internal sealed class AssistantForm : Form
         $server = '{{ServerAddress}}'
         $profileName = '{{ProfileName}}'
         $dnsSuffix = '{{DnsSuffix}}'
+        $stage = 'inicialización'
         try {
+            $stage = 'carga del módulo VPN'
             Import-Module VpnClient -ErrorAction Stop
+            $stage = 'búsqueda del perfil'
             $match = @(Get-VpnConnection | Where-Object {
                 $_.Name -eq $profileName -or $_.ServerAddress -eq $server
             } | Select-Object -First 1)
+            $stage = 'configuración EAP'
             $eap = New-EapConfiguration
             if ($match.Count -gt 0) {
                 $profileName = $match[0].Name
+                $stage = 'actualización del perfil VPN'
                 Set-VpnConnection -Name $profileName -ServerAddress $server -TunnelType Ikev2 `
                     -AuthenticationMethod Eap -EapConfigXmlStream $eap.EapConfigXmlStream `
-                    -SplitTunneling $true -DnsSuffix $dnsSuffix `
-                    -RememberCredential $false | Out-Null
+                    -SplitTunneling:$true -DnsSuffix $dnsSuffix `
+                    -RememberCredential:$false | Out-Null
             } else {
                 # Add-VpnConnection takes switches here; Set-VpnConnection takes Boolean values.
+                $stage = 'creación del perfil VPN'
                 Add-VpnConnection -Name $profileName -ServerAddress $server -TunnelType Ikev2 `
                     -AuthenticationMethod Eap -EapConfigXmlStream $eap.EapConfigXmlStream `
                     -SplitTunneling -DnsSuffix $dnsSuffix | Out-Null
             }
+            $stage = 'búsqueda de la ruta VPN'
             $route = @(Get-VpnConnectionRoute -ConnectionName $profileName -ErrorAction SilentlyContinue |
                 Where-Object { $_.DestinationPrefix -eq '{{InternalNetwork}}' })
             if ($route.Count -eq 0) {
+                $stage = 'creación de la ruta VPN'
                 Add-VpnConnectionRoute -ConnectionName $profileName -DestinationPrefix '{{InternalNetwork}}' | Out-Null
             }
             Write-Output ('OILMETAL_PROFILE=' + $profileName)
         } catch {
-            [Console]::Error.WriteLine($_.Exception.Message)
+            [Console]::Error.WriteLine(('Error en ' + $stage + ': ' + $_.Exception.Message))
             exit 1
         }
         """;
