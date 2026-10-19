@@ -255,6 +255,7 @@ internal sealed class AssistantForm : Form
 
     private static string BuildProfileScript() => $$"""
         $ErrorActionPreference = 'Stop'
+        $ProgressPreference = 'SilentlyContinue'
         $server = '{{ServerAddress}}'
         $profileName = '{{ProfileName}}'
         $dnsSuffix = '{{DnsSuffix}}'
@@ -265,18 +266,17 @@ internal sealed class AssistantForm : Form
             } | Select-Object -First 1)
             if ($match.Count -gt 0) {
                 $profileName = $match[0].Name
-                $eap = New-EapConfiguration
                 Set-VpnConnection -Name $profileName -ServerAddress $server -TunnelType Ikev2 `
-                    -AuthenticationMethod Eap -EapConfigXmlStream $eap.EapConfigXmlStream `
                     -SplitTunneling $true -DnsSuffix $dnsSuffix `
                     -RememberCredential $false | Out-Null
             } else {
-                $eap = New-EapConfiguration
                 Add-VpnConnection -Name $profileName -ServerAddress $server -TunnelType Ikev2 `
-                    -AuthenticationMethod Eap -EapConfigXmlStream $eap.EapConfigXmlStream `
                     -SplitTunneling $true -DnsSuffix $dnsSuffix `
                     -RememberCredential $false | Out-Null
             }
+            $eap = New-EapConfiguration
+            Set-VpnConnection -Name $profileName -AuthenticationMethod Eap `
+                -EapConfigXmlStream $eap.EapConfigXmlStream -RememberCredential $false | Out-Null
             $route = @(Get-VpnConnectionRoute -ConnectionName $profileName -ErrorAction SilentlyContinue |
                 Where-Object { $_.DestinationPrefix -eq '{{InternalNetwork}}' })
             if ($route.Count -eq 0) {
