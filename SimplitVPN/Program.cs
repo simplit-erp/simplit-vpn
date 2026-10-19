@@ -261,21 +261,26 @@ internal sealed class AssistantForm : Form
         try {
             Import-Module VpnClient -ErrorAction Stop
             $match = @(Get-VpnConnection | Where-Object {
-                $_.ServerAddress -eq $server -and $_.TunnelType -eq 'Ikev2'
+                $_.Name -eq $profileName -or $_.ServerAddress -eq $server
             } | Select-Object -First 1)
             if ($match.Count -gt 0) {
                 $profileName = $match[0].Name
                 $eap = New-EapConfiguration
                 Set-VpnConnection -Name $profileName -ServerAddress $server -TunnelType Ikev2 `
                     -AuthenticationMethod Eap -EapConfigXmlStream $eap.EapConfigXmlStream `
-                    -EncryptionLevel Required -SplitTunneling $true -DnsSuffix $dnsSuffix `
+                    -SplitTunneling $true -DnsSuffix $dnsSuffix `
                     -RememberCredential $false | Out-Null
             } else {
                 $eap = New-EapConfiguration
                 Add-VpnConnection -Name $profileName -ServerAddress $server -TunnelType Ikev2 `
                     -AuthenticationMethod Eap -EapConfigXmlStream $eap.EapConfigXmlStream `
-                    -EncryptionLevel Required -SplitTunneling $true -DnsSuffix $dnsSuffix `
+                    -SplitTunneling $true -DnsSuffix $dnsSuffix `
                     -RememberCredential $false | Out-Null
+            }
+            $route = @(Get-VpnConnectionRoute -ConnectionName $profileName -ErrorAction SilentlyContinue |
+                Where-Object { $_.DestinationPrefix -eq '{{InternalNetwork}}' })
+            if ($route.Count -eq 0) {
+                Add-VpnConnectionRoute -ConnectionName $profileName -DestinationPrefix '{{InternalNetwork}}' | Out-Null
             }
             Write-Output ('OILMETAL_PROFILE=' + $profileName)
         } catch {

@@ -2,7 +2,7 @@
 
 Aplicación gráfica nativa para configurar y conectar la VPN IKEv2 de Oilmetal usando el cliente integrado de Windows. El usuario ejecuta un `.exe` con una ventana normal de Windows; no tiene que abrir PowerShell ni editar un perfil manualmente.
 
-El asistente crea o actualiza el perfil VPN del usuario actual, habilita túnel dividido, configura el sufijo DNS `oilmetal.com.ar` y no almacena credenciales. Windows solicita las credenciales al conectar. La ruta interna negociada por el servidor strongSwan es `172.16.0.0/24`.
+El asistente crea o actualiza el perfil VPN del usuario actual, habilita túnel dividido, agrega la ruta `172.16.0.0/24`, configura el sufijo DNS `oilmetal.com.ar` y no almacena credenciales. Windows solicita las credenciales al conectar.
 
 ## Obtener el ejecutable
 
@@ -18,4 +18,4 @@ La aplicación requiere Windows 10 u 11. No instala certificados, no cambia el s
 
 ## Publicar una versión
 
-El workflow de GitHub Actions compila el ejecutable en Windows y lo adjunta a un Release al publicar un tag con formato `v*` (por ejemplo `v1.0.0`). El proyecto debe estar en un repositorio GitHub con Actions habilitado. No subir contraseñas, claves privadas ni configuraciones secretas.
+El workflow de GitHub Actions compila el ejecutable en Windows y lo adjunta a un Release al publicar un tag con formato `v*` (por ejemplo `v1.0.1`). El proyecto debe estar en un repositorio GitHub con Actions habilitado. No subir contraseñas, claves privadas ni configuraciones secretas.
