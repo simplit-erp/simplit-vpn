@@ -18,4 +18,4 @@ La aplicación requiere Windows 10 u 11. No instala certificados, no cambia el s
 
 ## Publicar una versión
 
-El workflow de GitHub Actions compila el ejecutable en Windows y lo adjunta a un Release al publicar un tag con formato `v*` (por ejemplo `v1.0.4`). El proyecto debe estar en un repositorio GitHub con Actions habilitado. No subir contraseñas, claves privadas ni configuraciones secretas.
+El workflow de GitHub Actions compila el ejecutable en Windows y lo adjunta a un Release al publicar un tag con formato `v*` (por ejemplo `v1.0.5`). El proyecto debe estar en un repositorio GitHub con Actions habilitado. No subir contraseñas, claves privadas ni configuraciones secretas.

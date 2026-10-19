@@ -296,8 +296,8 @@ internal sealed class AssistantForm : Form
                     -SplitTunneling -DnsSuffix $dnsSuffix | Out-Null
             }
             $stage = 'búsqueda de la ruta VPN'
-            $route = @(Get-VpnConnectionRoute -ConnectionName $profileName -ErrorAction SilentlyContinue |
-                Where-Object { $_.DestinationPrefix -eq '{{InternalNetwork}}' })
+            $connection = Get-VpnConnection -Name $profileName -ErrorAction Stop
+            $route = @($connection.Routes | Where-Object { $_.DestinationPrefix -eq '{{InternalNetwork}}' })
             if ($route.Count -eq 0) {
                 $stage = 'creación de la ruta VPN'
                 Add-VpnConnectionRoute -ConnectionName $profileName -DestinationPrefix '{{InternalNetwork}}' | Out-Null
