@@ -23,8 +23,22 @@ jobs:
         shell: pwsh
         run: dotnet publish SimplitVPN/SimplitVPN.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o dist
 
+      - name: Package versioned downloads
+        shell: pwsh
+        run: |
+          $releaseTag = $env:GITHUB_REF_NAME
+          $projectVersion = ([xml](Get-Content -Raw SimplitVPN/SimplitVPN.csproj)).Project.PropertyGroup.Version
+          if ($releaseTag -ne "v$projectVersion") {
+            throw "El tag $releaseTag no coincide con la versión $projectVersion del proyecto."
+          }
+          $exePath = "dist/SimplitVPN-$releaseTag.exe"
+          Move-Item -LiteralPath dist/SimplitVPN.exe -Destination $exePath
+          Compress-Archive -LiteralPath $exePath -DestinationPath "dist/SimplitVPN-$releaseTag.zip"
+
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: pwsh
-        run: gh release create "$env:GITHUB_REF_NAME" dist/SimplitVPN.exe --generate-notes
+        run: |
+          $releaseTag = $env:GITHUB_REF_NAME
+          gh release create $releaseTag "dist/SimplitVPN-$releaseTag.exe" "dist/SimplitVPN-$releaseTag.zip" --generate-notes

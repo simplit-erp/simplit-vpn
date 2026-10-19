@@ -6,11 +6,11 @@ El asistente crea o actualiza el perfil VPN del usuario actual, habilita túnel 
 
 ## Obtener el ejecutable
 
-Descarga `SimplitVPN.exe` desde **Releases**. Al ser una primera versión sin firma digital, Windows puede mostrar una advertencia de editor desconocido.
+Descarga `SimplitVPN-vX.Y.Z.exe` o `SimplitVPN-vX.Y.Z.zip` desde **Releases**. El ZIP contiene el mismo ejecutable con la versión en el nombre. Al no estar firmado digitalmente, Windows puede mostrar una advertencia de editor desconocido.
 
 ## Uso
 
-1. Ejecuta `SimplitVPN.exe`.
+1. Ejecuta el archivo `SimplitVPN-vX.Y.Z.exe` descargado o extraído del ZIP.
 2. Pulsa **Configurar VPN** una vez.
 3. Pulsa **Conectar** e ingresa tus credenciales cuando Windows las solicite.
 
@@ -18,4 +18,4 @@ La aplicación requiere Windows 10 u 11. No instala certificados, no cambia el s
 
 ## Publicar una versión
 
-El workflow de GitHub Actions compila el ejecutable en Windows y lo adjunta a un Release al publicar un tag con formato `v*` (por ejemplo `v1.0.5`). El proyecto debe estar en un repositorio GitHub con Actions habilitado. No subir contraseñas, claves privadas ni configuraciones secretas.
+El workflow de GitHub Actions compila el ejecutable en Windows y adjunta el `.exe` y el `.zip` al Release al publicar un tag que coincida con la versión del proyecto (por ejemplo `v1.0.6`). El proyecto debe estar en un repositorio GitHub con Actions habilitado. No subir contraseñas, claves privadas ni configuraciones secretas.
